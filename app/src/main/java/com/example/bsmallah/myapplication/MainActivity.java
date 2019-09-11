@@ -5,10 +5,13 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -26,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -38,6 +42,10 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     private FrameLayout container1;
     private TextView textView;
+    RecyclerView recyclerView;
+    List<Post> postList = new ArrayList<>();
+    PostRecyclerAdapter adapter;
+    PostRecyclerAdapter.PostClickListener listener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,12 +55,22 @@ public class MainActivity extends AppCompatActivity {
 
         container1 = findViewById(R.id.frame_container);
         bottomNavigationView = findViewById(R.id.bottom_nav);
-        bottomNavigationView.setOnNavigationItemSelectedListener(listener);
+        bottomNavigationView.setOnNavigationItemSelectedListener(listener2);
+        recyclerView = findViewById(R.id.recycle_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
 
-        textView =
-                findViewById(R.id.text_xml);
+        listener= new PostRecyclerAdapter.PostClickListener() {
+            @Override
+            public void OnPostClikListener(int position) {
+                Toast.makeText(getBaseContext(),""+position,Toast.LENGTH_LONG).show();
+            }
+        };
 
-        CreatPost(new Post(1,"ji is bad boy","ji"));
+        adapter = new PostRecyclerAdapter(postList,this,listener);
+
+        recyclerView.setAdapter(adapter);
+
+        GetListOfPostsUsingRetrofit();
 
     }
 
@@ -138,6 +156,32 @@ public class MainActivity extends AppCompatActivity {
                textView.setText("failed"+t.getLocalizedMessage());
            }
        });
+
+    }
+
+    private void GetListOfPostsUsingRetrofit(){
+     String BaseUrl = "https://jsonplaceholder.typicode.com/";
+     Retrofit.Builder builder = new Retrofit.Builder().baseUrl(BaseUrl)
+             .addConverterFactory(GsonConverterFactory.create());
+     Retrofit retrofit = builder.build();
+     RetrofitWebService retrofitWebService = retrofit.create(RetrofitWebService.class);
+
+     retrofitWebService.GetPostList().enqueue(new Callback<List<Post>>() {
+         @Override
+         public void onResponse(Call<List<Post>> call, retrofit2.Response<List<Post>> response) {
+             postList = response.body();
+             if(postList.size()!=0&&postList!=null)
+               //  adapter = new PostRecyclerAdapter(postList,getBaseContext(),listener);
+                 adapter.setPostes(postList);
+                 adapter.notifyDataSetChanged();
+                 //recyclerView.setAdapter(adapter);
+         }
+
+         @Override
+         public void onFailure(Call<List<Post>> call, Throwable t) {
+            Toast.makeText(getBaseContext(),"failed",Toast.LENGTH_LONG).show();
+         }
+     });
 
     }
 
@@ -282,7 +326,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private BottomNavigationView.OnNavigationItemSelectedListener listener =
+    private BottomNavigationView.OnNavigationItemSelectedListener listener2 =
             new BottomNavigationView.OnNavigationItemSelectedListener() {
                 @Override
                 public boolean onNavigationItemSelected(@NonNull MenuItem item) {

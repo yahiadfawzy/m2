@@ -4,6 +4,8 @@ public class Post {
     private  int id;
     private int userId;
     private String body;
+    private String title;
+
 
     public Post(int userId, String body, String title) {
         this.userId = userId;
@@ -27,6 +29,5 @@ public class Post {
         return title;
     }
 
-    private String title;
 
 }
