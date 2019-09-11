@@ -33,7 +33,6 @@ public interface RetrofitWebService {
     @POST("create")
     Call<Employe> CreatEmployee(@Body Employe employe);
 
-    @POST("create")
-    Call<Employe> CreatEmployee();
+ 
 
 }
