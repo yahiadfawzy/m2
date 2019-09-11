@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="first">HOME</string>
+    <string name="second">STORE</string>
+    <string name="third">NOTIFICTION</string>
+
+</resources>
